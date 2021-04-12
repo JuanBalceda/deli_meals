@@ -1,32 +1,48 @@
 import 'package:deli_meals/dummy_data.dart';
+import 'package:deli_meals/models/meal.dart';
 import 'package:deli_meals/widgets/meal_item.dart';
 import 'package:flutter/material.dart';
 
-class CategoryMealsScreen extends StatelessWidget {
+class CategoryMealsScreen extends StatefulWidget {
   static const ROUTE_NAME = '/category-meals';
-  // final String categoryId;
-  // final String categoryTitle;
-  //
-  // CategoryMealsScreen(this.categoryId, this.categoryTitle);
 
   @override
-  Widget build(BuildContext context) {
+  _CategoryMealsScreenState createState() => _CategoryMealsScreenState();
+}
+
+class _CategoryMealsScreenState extends State<CategoryMealsScreen> {
+  late String categoryTitle;
+  late List<Meal> displayedMeals;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
     final routeArgs =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
     final String categoryId = routeArgs['id']!;
-    final String categoryTitle = routeArgs['title']!;
+    categoryTitle = routeArgs['title']!;
 
-    var categoryMeals = DUMMY_MEALS
+    displayedMeals = DUMMY_MEALS
         .where((meal) => meal.categories.contains(categoryId))
         .toList();
+  }
 
+  void _removeMeal(String mealId) {
+    setState(() {
+      displayedMeals.removeWhere((meal) => meal.id == mealId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(categoryTitle),
       ),
       body: ListView.builder(
         itemBuilder: (ctx, index) {
-          var meal = categoryMeals[index];
+          var meal = displayedMeals[index];
           return MealItem(
             id: meal.id,
             title: meal.title,
@@ -34,9 +50,10 @@ class CategoryMealsScreen extends StatelessWidget {
             duration: meal.duration,
             complexity: meal.complexity,
             affordability: meal.affordability,
+            removeItem: _removeMeal,
           );
         },
-        itemCount: categoryMeals.length,
+        itemCount: displayedMeals.length,
       ),
     );
   }
